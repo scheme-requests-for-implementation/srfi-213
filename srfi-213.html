@@ -100,7 +100,7 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
     <p>Attaching the property is then as simple as</p>
 
     <pre class="code">
-    (define-property computer answer (* 2 28))</pre>
+    (define-property computer answer (* 2 21))</pre>
 
     <p>As the property associates an expand-time value, we have to
     retrieve the property through a macro:</p>
@@ -138,7 +138,7 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
 
     (get-the-answer computer answer)   &xrArr; 42</pre>
 
-    <p>The same is true if change the meaning of the identifier the
+    <p>The same is true if we change the meaning of the identifier the
     property is attached to:</p>
 
     <pre class="code">
@@ -218,7 +218,7 @@ class="token">expression</span>)</code></p>
       If <code><var>id</var></code> is unbound, <code>#f</code> is
       returned.</p>
 
-    <p>If a <b>er-macro-transformer</b> returns a procedure instead of
+    <p>If an <b>er-macro-transformer</b> returns a procedure instead of
     a datum when applied to the input of a macro use, this procedure
     is called with the single argument <code><var>lookup</var></code>.
     This procedure has to return a datum, which is then taken as the
@@ -230,7 +230,7 @@ class="token">expression</span>)</code></p>
       or <code><var>key</var></code>, the symbol behaves as if it
       represents an identifier introduced at the macro use.</p>
 
-    <p>If a <b>ir-macro-transformer</b> returns a procedure instead of
+    <p>If an <b>ir-macro-transformer</b> returns a procedure instead of
       a datum when applied to the input of a macro use, this procedure
       is called with the single argument <code><var>lookup</var></code>.
       This procedure has to return a datum, which is then taken as the
@@ -242,7 +242,7 @@ class="token">expression</span>)</code></p>
       or <code><var>key</var></code>, the symbol behaves as if it
       represents an identifier introduced at the macro definition.</p>
 
-    <p>If a <b>sc-macro-transformer</b> returns a procedure instead of
+    <p>If an <b>sc-macro-transformer</b> returns a procedure instead of
     a form when applied to the input of a macro use, this procedure is
     called with the single argument <code><var>lookup</var></code>.
     This procedure has to return a form, which is then taken as the
