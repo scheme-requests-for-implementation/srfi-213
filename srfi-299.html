@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SRFI 299: Identifier Properties</title>
+    <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
+    <link rel="stylesheet" href="https://srfi.schemers.org/srfi.css"
+type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body
+      {
+          font-family: serif;
+      }
+      span.token
+      {
+          font-family: serif;
+      }
+      span.token::before
+      {
+          content: "〈";
+      }
+      span.token::after
+      {
+          content: "〉";
+      }
+      pre.code {
+          font-size: 80%;
+      }
+  </style></head>
+  <body>
+    <h1><a href="https://srfi.schemers.org/"><img class="srfi-logo"
+src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
+/></a>299: Identifier Properties</h1>
+
+    <p>by Marc Nieper-Wißkirchen</p>
+
+    <h2 id="status">Status</h2>
+
+    <h2 id="abstract">Abstract</h2>
+
+    <p>Using the <code>define-property</code> definition described in
+      this SRFI, expand-time properties can be associated with
+      identifiers in a referentially transparent and lexically scoped way.</p>
+
+    <h2 id="issues">Issues</h2>
+
+    <h2 id="rationale">Rationale</h2>
+
+    <p>In many dialects of Lisps, symbols have attached properties.
+      Each property associates a key with a value.  Traditionally,
+      identifiers in Lisp are the same as symbols and traditional Lisp
+      macros transform Lisp data (usually represented by
+      s-expressions).  In particular, symbol properties can be used by
+      one macro to record information about an identifier for use by
+      another dependent macro.</p>
+
+    <p>In contrast to traditional Lisps, Scheme has hygienic macros
+      and lexical scoping.  The hygiene condition necessitates that
+      identifiers are in general no more symbols, so we want to attach
+      properties to identifiers instead of symbols.  To achieve
+      lexical scoping of these properties, the properties have, in
+      fact, to be attached to the binding of an identifier and become
+      expand-time properties.  Moreover, to preserve referential
+      transparency, a property of an identifier has to be associated
+      with the binding of a key that is itself an identifier instead
+      of a symbol.</p>
+
+    <p>An implementation of this idea of identifier properties is this
+      SRFI, which describes the <code>define-property</code>
+      definition, which attaches a property to an identifier, and a
+      way for macro transformers to lookup these properties.</p>
+
+    <p>Use cases are numerous.  One could write a pattern matcher
+    together with a template engine akin to
+    the <code>syntax-case</code>/<code>syntax</code> pair so that
+    properties are attached to identifiers that represent pattern
+    variables for identification in the template elements.  In fact,
+    one could portably implement <code>syntax-case</code>
+    and <code>syntax</code> on top of the low-level macro
+    facility <code>(srfi 211 low-level)</code> with this SRFI.
+    Another use case is the attachment of properties to record-type
+    descriptors for, say, the use in child record type definitions.
+    Or one could attach compile-time information to procedures for
+    optimization purposes at their use site, and so on.</p>
+
+    <h3>Example</h3>
+
+    <p>In order to attach a property to an identifier binding, we have
+      to create such a binding first:</p>
+
+    <pre class="code">
+    (define computer "the-computer")</pre>
+
+    <p>Moreover, we need a binding that can act as the property's key:</p>
+
+    <pre class="code">
+    (define answer #f)</pre>
+
+    <p>Attaching the property is then as simple as</p>
+
+    <pre class="code">
+    (define-property computer answer (* 2 28))</pre>
+
+    <p>As the property associates an expand-time value, we have to
+    retrieve the property through a macro:</p>
+
+    <pre class="code">
+    (define-syntax get-the-answer
+      (lambda (stx)
+        (lambda (lookup)
+          (syntax-case stx ()
+            ((_ x key)
+             (let ((res (lookup #'x #'key)))
+               (cond
+                 ((not res) #f)
+                 ((number? res) res)
+                 (else
+                  (error "not a number" res)))))))))</pre>
+
+    <p>We then have the expansion (and thus evaluation) of</p>
+
+    <pre class="code">
+    (get-the-answer computer answer)   &xrArr; 42</pre>
+
+    <p>By the way, attaching the property hasn't disturbed the
+      original binding:</p>
+
+    <pre class="code">
+    computer   &xrArr; "the-computer"</pre>
+
+    <p>If we shadow the binding of the key, we cannot access the
+      property anymore, making private interfaces possible:</p>
+
+    <pre class="code">
+    (let ((answer #f))
+      (get-the-answer computer answer))   &xrArr; #f
+
+    (get-the-answer computer answer)   &xrArr; 42</pre>
+
+    <p>The same is true if change the meaning of the identifier the
+    property is attached to:</p>
+
+    <pre class="code">
+    (let ((computer "the-super-computer"))
+      (get-the-answer computer answer))   &xrArr; #f
+
+    (get-the-answer computer answer)   &xrArr; 42</pre>
+
+    <p>Finally, the attachment of properties is lexically scoped:</p>
+
+    <pre class="code">
+    (let* ()
+      (define-property computer answer 43)
+      (get-the-answer computer answer))      &xrArr; 43
+
+    (get-the-answer computer answer)   &xrArr; 42</pre>
+
+    <h2 id="specification">Specification</h2>
+
+    <h3>Syntax</h3>
+
+    <p>Like other definitions, the <code>define-property</code>
+      definition can either appear at the outermost level or in a body
+      where other definitions can appear.</p>
+
+    <p><code>(define-property <span class="token">identifier</span>
+        <span class="token">key</span> <span
+class="token">expression</span>)</code></p>
+
+    <p><i>Syntax:</i> <code><span class="token">Identifier</span></code>
+      and <code><span class="token">key</span></code> are bound
+      identifiers.  <code><span class="token">Expression</span></code>
+      can be any expression.</p>
+
+    <p><i>Semantics:</i>
+      The <code><span class="token">expression</span></code> is
+      evaluated at macro-expansion time and a new property associating
+      the binding of <code><span class="token">key</span></code> with
+      the resulting value is attached to the binding
+      of <code><span class="token">identifier</span></code> without
+      disturbing the existing meaning of the identifier in the scope
+      of that binding.</p>
+
+    <p>The scope of a property introduced
+      by <code>define-property</code> is the entire body in which the
+      <code>define-property</code> form appears or the outermost
+      level, except where it is replaced by a property for the
+      same <code><span class="token">identifier</span></code>
+      and <code><span class="token">key</span></code> or where the
+      binding to which it is attached is shadowed.</p>
+
+    <p>Any number of properties can be attached to the same binding
+      with different keys. Attaching a new property with the same name
+      as a property already attached to a binding shadows the existing
+      property with the new property.</p>
+
+    <p><i>Note: </i> Contrary to other definitions, it is not an error
+    to define the same property more than once in the same body.</p>
+
+    <h3>Transformers</h3>
+
+    <p>If a <b>transformation procedure</b> returns a procedure instead of a
+      syntax object when applied to the input of a macro use, this
+      procedure is called with the single
+      argument <code><var>lookup</var></code>.  This procedure has to
+      return a syntax object, which is then taken as the transformer's
+      output.</p>
+
+    <p><code><var>Lookup</var></code> is a procedure accepting two
+      identifier arguments <code><var>id</var></code>
+      and <code><var>key</var></code>.
+      The <code><var>lookup</var></code> procedure returns the value
+      of the property of <code><var>id</var></code> associated with
+      the binding of <code><var>key</var></code> or <code>#f</code> if
+      there is no such property.  It is an error
+      if <code><var>key</var></code> is not bound.
+      If <code><var>id</var></code> is unbound, <code>#f</code> is
+      returned.</p>
+
+    <p>If a <b>er-macro-transformer</b> returns a procedure instead of
+    a datum when applied to the input of a macro use, this procedure
+    is called with the single argument <code><var>lookup</var></code>.
+    This procedure has to return a datum, which is then taken as the
+    transformer's output.</p>
+
+    <p>The <code><var>lookup</var></code> procedure is as in the case
+      of transformer procedures except that if it is called with a
+      symbol for the argument for <code><var>id</var></code>
+      or <code><var>key</var></code>, the symbol behaves as if it
+      represents an identifier introduced at the macro use.</p>
+
+    <p>If a <b>ir-macro-transformer</b> returns a procedure instead of
+      a datum when applied to the input of a macro use, this procedure
+      is called with the single argument <code><var>lookup</var></code>.
+      This procedure has to return a datum, which is then taken as the
+      transformer's output.</p>
+
+    <p>The <code><var>lookup</var></code> procedure is as in the case
+      of transformer procedures except that if it is called with a
+      symbol for the argument for <code><var>id</var></code>
+      or <code><var>key</var></code>, the symbol behaves as if it
+      represents an identifier introduced at the macro definition.</p>
+
+    <p>If a <b>sc-macro-transformer</b> returns a procedure instead of
+    a form when applied to the input of a macro use, this procedure is
+    called with the single argument <code><var>lookup</var></code>.
+    This procedure has to return a form, which is then taken as the
+    transformer's output.</p>
+
+    <p>The <code><var>lookup</var></code> procedure is as in the case
+      of transformer procedures except that it accepts four
+      arguments <code><var>id-env</var></code>,
+      <code><var>id</var></code>, <code><var>key-env</var></code>,
+      and <code><var>key</var></code>,
+      where <code><var>id-env</var></code>
+      and <code><var>key-env</var></code> are syntactic environments.
+      The bindings of <code><var>id</var></code>
+      and <code><var>key</var></code> are then looked up in these
+      environments.</p>
+
+    <p>If a <b>lisp-transformer</b> returns a procedure instead of a
+      datum when applied to the input of a macro use, this procedure is
+      called with the single argument <code><var>lookup</var></code>.
+      This procedure has to return a datum, which is then taken as the
+      transformer's output.</p>
+
+    <p>The <code><var>lookup</var></code> procedure is as in the case
+      of transformer procedures except that it accepts symbols instead
+      of identifiers as arguments for <code><var>id</var></code>
+      or <code><var>key</var></code>.  The symbols
+      behave as if they represent identifiers introduced at the
+      macro use.</p>
+
+    <h2 id="implementation">Implementation</h2>
+
+    <p>This SRFI is provided by
+      the <a href="https://www.unsyntax.org">Unsyntax implementation
+        of the Scheme programming language</a>.</p>
+
+    <p><a href="https://cisco.github.io/ChezScheme/">Chez Scheme</a>
+    implements <code>define-property</code> in
+    its <code>(chezscheme)</code> library.</p>
+
+    <h2 id="acknowledgements">Acknowledgements</h2>
+
+    <p>The author read about the <code>define-property</code>
+      definition in the Chez Scheme User&apos;s Guide.  Some of the
+      wording was shamelessly stolen from the manual. </p>
+
+    <h2 id="copyright">Copyright</h2>
+    <p>&copy; 2020 Marc Nieper-Wißkirchen.</p>
+
+    <p>
+      Permission is hereby granted, free of charge, to any person
+      obtaining a copy of this software and associated documentation files
+      (the "Software"), to deal in the Software without restriction,
+      including without limitation the rights to use, copy, modify, merge,
+      publish, distribute, sublicense, and/or sell copies of the Software,
+      and to permit persons to whom the Software is furnished to do so,
+      subject to the following conditions:</p>
+
+    <p>
+      The above copyright notice and this permission notice (including the
+      next paragraph) shall be included in all copies or substantial
+      portions of the Software.</p>
+    <p>
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+      EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+      NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+      BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+      ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+      CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+      SOFTWARE.</p>
+
+    <hr>
+    <address>Editor: <a href="mailto:srfi-editors+at+srfi+dot+schemers+dot+org">Arthur A. Gleckler</a></address></body></html>
