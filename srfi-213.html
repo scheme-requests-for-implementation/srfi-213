@@ -114,15 +114,16 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
     <pre class="code">
     (define-syntax get-the-answer
       (lambda (stx)
-        (lambda (lookup)
-          (syntax-case stx ()
-            ((_ x key)
-             (let ((res (lookup #'x #'key)))
-               (cond
-                 ((not res) #f)
-                 ((number? res) res)
-                 (else
-                  (error "not a number" res)))))))))</pre>
+        (capture-lookup
+          (lambda (lookup)
+            (syntax-case stx ()
+              ((_ x key)
+               (let ((res (lookup #'x #'key)))
+                 (cond
+                   ((not res) #f)
+                   ((number? res) res)
+                   (else
+                    (error "not a number" res))))))))))</pre>
 
     <p>We then have the expansion (and thus evaluation) of</p>
 
@@ -204,14 +205,29 @@ class="token">expression</span>)</code></p>
     <p><i>Note: </i> Contrary to other definitions, it is not an error
     to define the same property more than once in the same body.</p>
 
+    <h3>Procedures</h3>
+
+    <p><code>(capture-lookup <var>proc</var>)</code></p>
+
+    <p><code>Capture-lookup</code> is used in macro transformers as
+      described below.  When invoked, it returns a single value.</p>
+
+    <p>It is an error if <code><var>proc</var></code> is not a
+      procedure accepting a single argument.</p>
+
+    <p>For backward compatibility, <code>capture-lookup</code> but be
+      substituable by the identity <code>(lambda (proc) proc)</code>
+      when used in macro transformers as described below.</p>
+
     <h3>Transformers</h3>
 
-    <p>If a <b>transformation procedure</b> returns a procedure instead of a
-      syntax object when applied to the input of a macro use, this
-      procedure is called with the single
-      argument <code><var>lookup</var></code>.  This procedure has to
-      return a syntax object, which is then taken as the transformer's
-      output.</p>
+    <p>If a <b>transformation procedure</b> returns the result of
+      invoking <code>capture-lookup</code> on a
+      procedure <code><var>proc</var></code> instead of returning a
+      syntax object when applied to the input of a macro use, the
+      transformer is re-entered by
+      invoking <code><var>proc</var></code> with the single
+      argument <code><var>lookup</var></code>.</p>
 
     <p><code><var>Lookup</var></code> is a procedure accepting two
       identifier arguments <code><var>id</var></code>
@@ -221,14 +237,14 @@ class="token">expression</span>)</code></p>
       the binding of <code><var>key</var></code> or <code>#f</code> if
       there is no such property.  It is an error
       if <code><var>key</var></code> is not bound.
-      If <code><var>id</var></code> is unbound, <code>#f</code> is
-      returned.</p>
+      If <code><var>id</var></code> is unbound, an error is signaled.</p>
 
-    <p>If an <b>er-macro-transformer</b> returns a procedure instead of
-    a datum when applied to the input of a macro use, this procedure
-    is called with the single argument <code><var>lookup</var></code>.
-    This procedure has to return a datum, which is then taken as the
-    transformer's output.</p>
+    <p>If an <b>er-macro-transformer</b> returns the result of
+      invoking <code>capture-lookup</code> on a
+      procedure <code><var>proc</var></code> instead of returning a
+      datum when applied to the input of a macro use, the transformer
+      is re-entered by invoking <code><var>proc</var></code> with the
+      single argument <code><var>lookup</var></code>.</p>
 
     <p>The <code><var>lookup</var></code> procedure is as in the case
       of transformer procedures except that if it is called with a
@@ -236,11 +252,12 @@ class="token">expression</span>)</code></p>
       or <code><var>key</var></code>, the symbol behaves as if it
       represents an identifier introduced at the macro use.</p>
 
-    <p>If an <b>ir-macro-transformer</b> returns a procedure instead of
-      a datum when applied to the input of a macro use, this procedure
-      is called with the single argument <code><var>lookup</var></code>.
-      This procedure has to return a datum, which is then taken as the
-      transformer's output.</p>
+    <p>If an <b>ir-macro-transformer</b> returns the result of
+      invoking <code>capture-lookup</code> on a
+      procedure <code><var>proc</var></code> instead of returning a
+      datum when applied to the input of a macro use, the transformer
+      is re-entered by invoking <code><var>proc</var></code> with the
+      single argument <code><var>lookup</var></code>.</p>
 
     <p>The <code><var>lookup</var></code> procedure is as in the case
       of transformer procedures except that if it is called with a
@@ -248,11 +265,12 @@ class="token">expression</span>)</code></p>
       or <code><var>key</var></code>, the symbol behaves as if it
       represents an identifier introduced at the macro definition.</p>
 
-    <p>If an <b>sc-macro-transformer</b> returns a procedure instead of
-    a form when applied to the input of a macro use, this procedure is
-    called with the single argument <code><var>lookup</var></code>.
-    This procedure has to return a form, which is then taken as the
-    transformer's output.</p>
+    <p>If a <b>sc-macro-transformer</b> returns the result of
+      invoking <code>capture-lookup</code> on a
+      procedure <code><var>proc</var></code> instead of a returning form when
+      applied to the input of a macro use, the transformer is
+      re-entered by invoking <code><var>proc</var></code> with the
+      single argument <code><var>lookup</var></code>.</p>
 
     <p>The <code><var>lookup</var></code> procedure is as in the case
       of transformer procedures except that it accepts four
@@ -265,11 +283,12 @@ class="token">expression</span>)</code></p>
       and <code><var>key</var></code> are then looked up in these
       environments.</p>
 
-    <p>If a <b>lisp-transformer</b> returns a procedure instead of a
-      datum when applied to the input of a macro use, this procedure is
-      called with the single argument <code><var>lookup</var></code>.
-      This procedure has to return a datum, which is then taken as the
-      transformer's output.</p>
+    <p>If a <b>lisp-transformer</b> returns the result of
+      invoking <code>capture-lookup</code> on a
+      procedure <code><var>proc</var></code> instead of returning a
+      datum when applied to the input of a macro use, the transformer
+      is re-entered by invoking <code><var>proc</var></code> with the
+      single argument <code><var>lookup</var></code>.</p>
 
     <p>The <code><var>lookup</var></code> procedure is as in the case
       of transformer procedures except that it accepts symbols instead
@@ -295,7 +314,7 @@ class="token">expression</span>)</code></p>
       wording was shamelessly stolen from the manual. </p>
 
     <h2 id="copyright">Copyright</h2>
-    <p>&copy; 2020 Marc Nieper-Wißkirchen.</p>
+    <p>&copy; 2020--2021 Marc Nieper-Wißkirchen.</p>
 
     <p>
       Permission is hereby granted, free of charge, to any person
