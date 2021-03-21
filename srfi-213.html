@@ -41,7 +41,8 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
     <ul>
       <li>Received: 2020-09-29</li>
       <li>60-day deadline: 2020-11-28</li>
-      <li>Draft #1 published: 2020-09-29</li></ul>
+      <li>Draft #1 published: 2020-09-29</li>
+      <li>Draft #2 published: 2021-03-07</li></ul>
 
     <h2 id="abstract">Abstract</h2>
 
@@ -215,8 +216,8 @@ class="token">expression</span>)</code></p>
     <p>It is an error if <code><var>proc</var></code> is not a
       procedure accepting a single argument.</p>
 
-    <p>For backward compatibility, <code>capture-lookup</code> but be
-      substituable by the identity <code>(lambda (proc) proc)</code>
+    <p>For backward compatibility, <code>capture-lookup</code> must be
+      substitutable by the identity <code>(lambda (proc) proc)</code>
       when used in macro transformers as described below.</p>
 
     <h3>Transformers</h3>
