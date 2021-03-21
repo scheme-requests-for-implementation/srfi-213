@@ -8,7 +8,7 @@ keywords: [[https://srfi.schemers.org/?keywords=binding][Binding]], [[https://sr
 
 This repository hosts [[https://srfi.schemers.org/srfi-213/][SRFI 213]]: Identifier Properties, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
-This SRFI is in /draft/ status.
+This SRFI is in /final/ status.
 
 The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-213/srfi-213.html][SRFI Document]].
 
