@@ -64,7 +64,7 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
 
     <p>In contrast to traditional Lisps, Scheme has hygienic macros
       and lexical scoping.  The hygiene condition necessitates that
-      identifiers are in general no more symbols, so we want to attach
+      identifiers are in general no longer symbols, so we want to attach
       properties to identifiers instead of symbols.  To achieve
       lexical scoping of these properties, the properties have, in
       fact, to be attached to the binding of an identifier and become
@@ -76,7 +76,7 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
     <p>An implementation of this idea of identifier properties is this
       SRFI, which describes the <code>define-property</code>
       definition, which attaches a property to an identifier, and a
-      way for macro transformers to lookup these properties.</p>
+      way for macro transformers to look up these properties.</p>
 
     <p>Use cases are numerous.  One could write a pattern matcher
     together with a template engine akin to
@@ -138,7 +138,7 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
     computer   &xrArr; "the-computer"</pre>
 
     <p>If we shadow the binding of the key, we cannot access the
-      property anymore, making private interfaces possible:</p>
+      property any more, making private interfaces possible:</p>
 
     <pre class="code">
     (let ((answer #f))
@@ -321,7 +321,7 @@ class="token">expression</span>)</code></p>
       wording was shamelessly stolen from the manual. </p>
 
     <h2 id="copyright">Copyright</h2>
-    <p>&copy; 2020--2021 Marc Nieper-Wißkirchen.</p>
+    <p>&copy; 2020-2021 Marc Nieper-Wißkirchen.</p>
 
     <p>
       Permission is hereby granted, free of charge, to any person
