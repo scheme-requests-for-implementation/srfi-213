@@ -240,6 +240,12 @@ class="token">expression</span>)</code></p>
       if <code><var>key</var></code> is not bound.
       If <code><var>id</var></code> is unbound, an error is signaled.</p>
 
+    <p><i>Rationale:</i> The reason why it is enforced that an error
+    is signaled when <code><var>id</var></code> is unbound is so that
+    macro transformers can test through the facilities provided by
+    this SRFI whether identifiers are bound (in the transformer
+    environment).</p>
+
     <p>If an <b>er-macro-transformer</b> returns the result of
       invoking <code>capture-lookup</code> on a
       procedure <code><var>proc</var></code> instead of returning a
