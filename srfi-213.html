@@ -42,7 +42,16 @@ src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo"
       <li>Received: 2020-09-29</li>
       <li>Draft #1 published: 2020-09-29</li>
       <li>Draft #2 published: 2021-03-07</li>
-      <li>Finalized: 2021-03-21</li></ul>
+      <li>Finalized: 2021-03-21</li>
+      <li id="pfn1"><b>Post-finalization note added on 2021-09-12</b>:
+	<p>If an identifier is imported more than once in a program or
+	  library declaration, the identifier properties attached to the
+	  imported bindings are merged.  It is an error if two properties
+	  with the same key but that were defined by different expansions of
+	  the <code>define-property</code> definition would be merged.</p>
+
+	<p>Note: R7RS already specifies that it is an error to import an
+	  identifier more than once with different bindings.</p></li></ul>
 
     <h2 id="abstract">Abstract</h2>
 
